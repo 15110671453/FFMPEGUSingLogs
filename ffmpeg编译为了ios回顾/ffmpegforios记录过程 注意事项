@@ -1,0 +1,5 @@
+ffmpegforios记录过程 注意事项
+
+我们参考文档 http://www.cocoachina.com/ios/20150514/11827.html
+
+我们需要注意 当前IOS库 需要支持xcode8.3.2以上

@@ -1,0 +1,24 @@
+最后检查我们生成的IOS库 都支持那些架构 arm64 armv7 i386 x86
+
+macserver1:FFmpeg-iOS-build-script-master admindyn$ cd FFmpeg-iOS/
+macserver1:FFmpeg-iOS admindyn$ ls -la
+total 0
+drwxr-xr-x   4 root      staff  136  6 19 15:48 .
+drwxr-xr-x@ 13 admindyn  staff  442  6 19 15:48 ..
+drwxr-xr-x   9 root      staff  306  6 19 15:48 include
+drwxr-xr-x   9 root      staff  306  6 19 15:48 lib
+macserver1:FFmpeg-iOS admindyn$ cd lib/
+macserver1:lib admindyn$ ls -la
+total 282200
+drwxr-xr-x  9 root  staff       306  6 19 15:48 .
+drwxr-xr-x  4 root  staff       136  6 19 15:48 ..
+-rw-r--r--  1 root  staff  95367848  6 19 15:48 libavcodec.a
+-rw-r--r--  1 root  staff    363528  6 19 15:48 libavdevice.a
+-rw-r--r--  1 root  staff  16430456  6 19 15:48 libavfilter.a
+-rw-r--r--  1 root  staff  23971720  6 19 15:48 libavformat.a
+-rw-r--r--  1 root  staff   3284240  6 19 15:48 libavutil.a
+-rw-r--r--  1 root  staff    853744  6 19 15:48 libswresample.a
+-rw-r--r--  1 root  staff   4199784  6 19 15:48 libswscale.a
+macserver1:lib admindyn$ lipo -info libavcodec.a 
+Architectures in the fat file: libavcodec.a are: armv7 i386 x86_64 arm64 
+macserver1:lib admindyn$ 
