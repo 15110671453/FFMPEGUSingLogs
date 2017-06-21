@@ -1,0 +1,15 @@
+SDL For Mac 构建mac 工程
+
+$(HOME)/Library/Frameworks/SDL.framework/Headers
+
+ * Create a new "Cocoa Application"
+    * Add src/main/macosx/SDLMain.m , .h and .nib to your project
+    * Remove "main.c" from your project
+    * Remove "MainMenu.nib" from your project
+    * Add "$(HOME)/Library/Frameworks/SDL.framework/Headers" to include path
+    * Add "$(HOME)/Library/Frameworks" to the frameworks search path
+    * Add "-framework SDL -framework Foundation -framework AppKit" to "OTHER_LDFLAGS"
+    * Set the "Main Nib File" under "Application Settings" to "SDLMain.nib"
+    * Add your files
+    * Clean and build
+

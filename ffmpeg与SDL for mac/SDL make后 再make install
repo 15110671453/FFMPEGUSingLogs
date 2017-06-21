@@ -1,0 +1,50 @@
+SDL make后 再make install
+
+macserver1:mybuildfiles admindyn$ make install
+/bin/sh ../build-scripts/updaterev.sh
+/bin/sh ../build-scripts/mkinstalldirs /usr/local/bin
+/usr/bin/install -c -m 755 sdl2-config /usr/local/bin/sdl2-config
+/bin/sh ../build-scripts/mkinstalldirs /usr/local/include/SDL2
+mkdir -p -- /usr/local/include/SDL2
+for file in SDL.h SDL_assert.h SDL_atomic.h SDL_audio.h SDL_bits.h SDL_blendmode.h SDL_clipboard.h SDL_cpuinfo.h SDL_egl.h SDL_endian.h SDL_error.h SDL_events.h SDL_filesystem.h SDL_gamecontroller.h SDL_gesture.h SDL_haptic.h SDL_hints.h SDL_joystick.h SDL_keyboard.h SDL_keycode.h SDL_loadso.h SDL_log.h SDL_main.h SDL_messagebox.h SDL_mouse.h SDL_mutex.h SDL_name.h SDL_opengl.h SDL_opengl_glext.h SDL_opengles.h SDL_opengles2_gl2ext.h SDL_opengles2_gl2.h SDL_opengles2_gl2platform.h SDL_opengles2.h SDL_opengles2_khrplatform.h SDL_pixels.h SDL_platform.h SDL_power.h SDL_quit.h SDL_rect.h SDL_render.h SDL_rwops.h SDL_scancode.h SDL_shape.h SDL_stdinc.h SDL_surface.h SDL_system.h SDL_syswm.h SDL_thread.h SDL_timer.h SDL_touch.h SDL_types.h SDL_version.h SDL_video.h begin_code.h close_code.h SDL_test.h SDL_test_assert.h SDL_test_common.h SDL_test_compare.h SDL_test_crc32.h SDL_test_font.h SDL_test_fuzzer.h SDL_test_harness.h SDL_test_images.h SDL_test_log.h SDL_test_md5.h SDL_test_random.h; do \
+	    /usr/bin/install -c -m 644 /Users/admindyn/Downloads/SDL2-2.0.5/include/$file /usr/local/include/SDL2/$file; \
+	done
+/usr/bin/install -c -m 644 include/SDL_config.h /usr/local/include/SDL2/SDL_config.h
+if test -f include/SDL_revision.h; then \
+	    /usr/bin/install -c -m 644 include/SDL_revision.h /usr/local/include/SDL2/SDL_revision.h; \
+	else \
+	    /usr/bin/install -c -m 644 /Users/admindyn/Downloads/SDL2-2.0.5/include/SDL_revision.h /usr/local/include/SDL2/SDL_revision.h; \
+	fi
+/bin/sh ../build-scripts/mkinstalldirs /usr/local/lib
+/bin/sh ./libtool --quiet --mode=install /usr/bin/install -c build/libSDL2.la /usr/local/lib/libSDL2.la
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_audiodev.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_d3dmath.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_render_d3d.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_render_d3d11.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_render_gles.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_render_gles2.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_shaders_gles2.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_render_psp.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: i386 file: /usr/local/lib/libSDL2.a(SDL_egl.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_audiodev.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_d3dmath.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_yuv_mmx.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_render_d3d.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_render_d3d11.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_render_gles.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_render_gles2.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_shaders_gles2.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_render_psp.o) has no symbols
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: for architecture: x86_64 file: /usr/local/lib/libSDL2.a(SDL_egl.o) has no symbols
+/usr/bin/install -c -m 644 build/libSDL2main.a /usr/local/lib/libSDL2main.a
+ranlib /usr/local/lib/libSDL2main.a
+/usr/bin/install -c -m 644 build/libSDL2_test.a /usr/local/lib/libSDL2_test.a
+ranlib /usr/local/lib/libSDL2_test.a
+/bin/sh ../build-scripts/mkinstalldirs /usr/local/share/aclocal
+/usr/bin/install -c -m 644 /Users/admindyn/Downloads/SDL2-2.0.5/sdl2.m4 /usr/local/share/aclocal/sdl2.m4
+/bin/sh ../build-scripts/mkinstalldirs /usr/local/lib/pkgconfig
+/usr/bin/install -c -m 644 sdl2.pc /usr/local/lib/pkgconfig
+/bin/sh ../build-scripts/mkinstalldirs /usr/local/lib/cmake/SDL2
+mkdir -p -- /usr/local/lib/cmake/SDL2
+/usr/bin/install -c -m 644 sdl2-config.cmake /usr/local/lib/cmake/SDL2
+macserver1:mybuildfiles admindyn$ 

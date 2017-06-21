@@ -1,0 +1,1174 @@
+sdl的认识
+
+SDL是一个跨平台的多媒体开发包。适用于游戏，模拟器，播放器等应用软件开发。支持Linux 、win32 等操作系统。
+
+主要应用：
+
+视频
+设置8bpp或更高的任意色彩深度的视频模式。如果某个模式硬件不支持，可以选择转化为另一模式。
+直接写入线性的图像帧缓冲（framebuffer）。
+用颜色键值（colorkey）或者alpha混合属性创建surface。
+Surface的blit能自动的转化为目标格式。blit是优化过的，并能使用硬件加速。x86平台上有针对MMX优化过的blit。
+硬件加速的blit和fill（填充）操作，如果硬件支持的话。
+事件
+
+提供以下事件：
+应用程序的visibility发生改变
+键盘输入
+鼠标输入
+用户要求的退出
+每种事件都能通过SDL_EventState()关闭或者打开。
+事件经由用户指定的过滤函数再被加入到内部的事件队列。
+线程安全的事件队列。
+音频
+
+设置8位和16位的音频，单声道或者立体声，如果格式硬件不支持，可以选择转换。
+由独立的线程执行音频部分，并提供用户回调（callback）机制。
+设计上考虑到了客户定制的软混音器，但实际上在例程中就包含了一个完整的音频/音乐输出库。
+CD音频
+
+完整的CD音频控制API
+线程
+
+简单的线程创建API
+用于同步的简单的二进制信号量（semaphores） 
+定时器
+
+读取已流逝的毫秒数。
+等待指定的毫秒数。
+设置一个10毫秒精度的周期性定时器。
+字节序无关
+
+侦测当前系统的字节序
+快速转换数据的函数
+读写指定字节序的数据
+这里我们使用SDL作为音视频输出对象，ffmpeg完成音视频的解码。
+
+像使用其他软件包或者开发库一样，首先肯定要初始化相应的库，然后才能够使用，初始化函数如下：
+
+if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER))
+        {
+          fprintf(stderr, "Could not initialize SDL - %s/n", SDL_GetError());
+          return -1 ;
+        }
+
+SDL有很多方法是实现视频的输出，但是YUV overlay是一种简单而又常用的方法，具体使用方法是：
+
+首先创建一个surface用来显示视频数据，然后创建一个overlay,然后就可以通过overlay输出视频到surface
+
+其创建过程如下：
+
+int  init_sdl(int width ,int height)
+{
+   
+
+    //create screen for displaying
+    screen = SDL_SetVideoMode(width, height, 0, 0);
+    if(!screen)
+    {
+          fprintf(stderr, "SDL: could not set video mode - exiting/n");
+          return -1 ;
+    }
+   
+    //Now we create a YUV overlay on that screen so we can input video to it:
+    bmp = SDL_CreateYUVOverlay(width, height,
+                           SDL_YV12_OVERLAY, screen);
+
+    return 0 ;
+}
+
+ 
+
+创建后就可以显示视频数据了，我对此进行了简单的封装,如下：
+
+//显示函数，提取一个完整的视频帧后，就可以显示此函数
+void sdl_display(AVPicture *pict,SDL_Overlay *bmp,enum PixelFormat src_fmt,int width,int height)
+{
+    SDL_Rect rect ;
+
+   struct SwsContext *img_convert_ctx=NULL;
+   AVPicture p;
+
+
+   SDL_LockYUVOverlay(bmp);
+
+              
+     p.data[0] = bmp->pixels[0];
+     p.data[1] = bmp->pixels[2];
+     p.data[2] = bmp->pixels[1];
+
+      p.linesize[0] = bmp->pitches[0];
+      p.linesize[1] = bmp->pitches[2];
+      p.linesize[2] = bmp->pitches[1];
+ 
+
+     //视频格式转化为YUV420P格式
+       img_convert_ctx=sws_getCachedContext(img_convert_ctx,width,height,
+                     src_fmt,width,height,PIX_FMT_YUV420P,
+                    SWS_X ,NULL,NULL,NULL) ;
+       if (img_convert_ctx == NULL)
+       {
+                        
+                 printf("can't init convert context!/n") ;
+                 return ;
+        }
+      sws_scale(img_convert_ctx, pict->data, pict->linesize,
+                           0,width, p.data, p.linesize);
+      
+              
+       SDL_UnlockYUVOverlay(bmp);
+    //设置显示区域的位置和大小
+       rect.x = 0;
+       rect.y = 0;
+       rect.w = width;
+       rect.h = height;
+    //显示视频帧
+       SDL_DisplayYUVOverlay(bmp, &rect);
+  
+}
+
+这样在解码出一帧数据后就可以通过调用此函数完成视频的显示了
+
+ 
+
+视频显示搞定了，那么该轮到音频输出
+
+要想输出音频，首先必须得打开音频设备，SDL对音频设备的打开和初始化已经做好了封装，我们通过调用SDL_OpenAudio 来打开和初始化音频设备，通过结构体 SDL_AudioSpec 设置相应的参数，然后将参数通过 SDL_OpenAudio 设置好设备，封装如下：
+
+SDL_AudioSpec audio_spec ,spec;
+
+int init_sdl_audio(AVCodecContext *aCodecCtx)
+{
+    audio_spec.freq = aCodecCtx->sample_rate;
+    audio_spec.format = AUDIO_S16SYS;
+    audio_spec.channels = aCodecCtx->channels;
+    audio_spec.silence = 0;
+    audio_spec.samples = SDL_AUDIO_BUFFER_SIZE;
+    audio_spec.callback = audio_callback;
+    audio_spec.userdata = aCodecCtx;
+
+    if(SDL_OpenAudio(&audio_spec, &spec) < 0) 
+    {
+          fprintf(stderr, "SDL_OpenAudio: %s/n", SDL_GetError());
+          return -1;
+    }
+
+    return 0 ;
+}
+
+其他就和视频一样了，先分解出音频流，然后根据音频流找出解码上下文，再根据解码上下文找到解码器，并打开了，接着就可以进行解码了。
+
+但是我们不能想解码视频一样，直接对音频包进行解码，我们不断从文件中的packet，同时SDL又要不断的调用回调函数，解决的办法是创建一个互斥队列，ffmpeg已经为我们封装了一个AVPacketList结构体，我们需要对此进行再次封装如下：
+
+typedef struct PacketQueue {
+
+
+  AVPacketList
+
+ *first_pkt, *last_pkt;
+
+
+  int nb_packets;
+
+
+  int size;
+
+
+  SDL_mutex
+
+ *mutex;
+
+
+  SDL_cond
+
+ *cond;
+
+
+} PacketQueue;
+
+
+我们得注意：这里的size是packet的大小，而nb_packets是队列中packet的个数。
+
+
+对于一个队列首先得有一个初始化函数，完成初始化
+
+
+void packet_queue_init(PacketQueue *q) {
+
+
+  memset(q, 0, sizeof(PacketQueue));
+
+
+  q->mutex = SDL_CreateMutex
+
+();
+
+
+  q->cond = SDL_CreateCond
+
+();
+
+
+}
+
+
+很明显这个初始化函数完成了队列的内存分配、互斥量和条件量的创建。
+
+
+然后就是入队和出队的函数
+
+
+//put audio packet in the queue 
+
+
+int packet_queue_put(PacketQueue *q, AVPacket *pkt) {
+
+
+
+
+
+  AVPacketList *pkt1;
+
+
+//if pkt is not allocated ,allocate it 
+
+
+  if(av_dup_packet(pkt) < 0) {
+
+
+    return -1;
+
+
+  }
+
+
+//allocate space for new member of queue 
+
+
+  pkt1 = av_malloc(sizeof(AVPacketList));
+
+
+  if (!pkt1)
+
+
+    return -1;
+
+
+//put pkt in pkt1
+
+
+  pkt1->pkt = *pkt;
+
+
+  pkt1->next = NULL;
+
+
+  
+
+
+//lock queue and wait until finishing put 
+
+
+  SDL_LockMutex(q->mutex);
+
+
+//if last_pkt is NULL,it means that the queue is NULL,so put the packet in the first position 
+
+
+  if (!q->last_pkt)
+
+
+    q->first_pkt = pkt1;
+
+
+  else
+
+
+    q->last_pkt->next = pkt1;
+
+
+  q->last_pkt = pkt1;
+
+
+  q->nb_packets++;
+
+
+  q->size += pkt1->pkt.size;
+
+
+//send signal of finish
+
+
+  SDL_CondSignal(q->cond);
+
+
+  
+
+
+  SDL_UnlockMutex(q->mutex);
+
+
+  return 0;
+
+
+}
+
+
+
+
+
+//put audio packet in the queue
+
+
+static int packet_queue_get(PacketQueue *q, AVPacket *pkt, int block) {
+
+
+  AVPacketList *pkt1;
+
+
+  int ret;
+
+
+  
+
+
+  SDL_LockMutex(q->mutex);
+
+
+  
+
+
+  for(;;) {
+
+
+    
+
+
+    if(quit) {
+
+
+      ret = -1;
+
+
+      break;
+
+
+    }
+
+
+
+
+
+    pkt1 = q->first_pkt;
+
+
+    if (pkt1) {
+
+
+      q->first_pkt = pkt1->next;
+
+
+      if (!q->first_pkt)
+
+
+	q->last_pkt = NULL;
+
+
+      q->nb_packets--;
+
+
+      q->size -= pkt1->pkt.size;
+
+
+      *pkt = pkt1->pkt;
+
+
+      av_free(pkt1);
+
+
+      ret = 1;
+
+
+      break;
+
+
+    } else if (!block) {
+
+
+      ret = 0;
+
+
+      break;
+
+
+    } else {
+
+
+      SDL_CondWait(q->cond, q->mutex);
+
+
+    }
+
+
+  }
+
+
+  SDL_UnlockMutex(q->mutex);
+
+
+  return ret;
+
+
+}
+
+
+这里我们必须得注意SDL为音频处理创建了一个单独的线程，线程中通过调用回调函数完成从包中解码出音频帧
+
+
+然后再调用解码函数将音频帧解码出来!
+
+
+void audio_callback(void *userdata, Uint8 *stream, int len) {
+
+
+
+
+
+  AVCodecContext *aCodecCtx = (AVCodecContext *)userdata;
+
+
+  int len1, audio_size;
+
+
+
+
+
+  static uint8_t audio_buf[(AVCODEC_MAX_AUDIO_FRAME_SIZE * 3) / 2];
+
+
+  static unsigned int audio_buf_size = 0;
+
+
+  static unsigned int audio_buf_index = 0;
+
+
+
+
+
+  while(len > 0) {
+
+
+    if(audio_buf_index >= audio_buf_size) {
+
+
+      /* We have already sent all our data; get more */
+
+
+      audio_size = audio_decode_frame(aCodecCtx, audio_buf,
+
+
+                                      sizeof(audio_buf));
+
+
+      if(audio_size < 0) {
+
+
+	/* If error, output silence */
+
+
+	audio_buf_size = 1024;
+
+
+	memset(audio_buf, 0, audio_buf_size);
+
+
+      } else {
+
+
+	audio_buf_size = audio_size;
+
+
+      }
+
+
+      audio_buf_index = 0;
+
+
+    }
+
+
+    len1 = audio_buf_size - audio_buf_index;
+
+
+    if(len1 > len)
+
+
+      len1 = len;
+
+
+    memcpy(stream, (uint8_t *)audio_buf + audio_buf_index, len1);
+
+
+    len -= len1;
+
+
+    stream += len1;
+
+
+    audio_buf_index += len1;
+
+
+  }
+
+
+}
+
+
+解码函数
+
+
+//decode audio frame
+
+
+int audio_decode_frame(AVCodecContext *aCodecCtx, uint8_t *audio_buf,
+
+
+                       int buf_size) {
+
+
+
+
+
+  static AVPacket pkt;
+
+
+  static uint8_t *audio_pkt_data = NULL;
+
+
+  static int audio_pkt_size = 0;
+
+
+
+
+
+  int len1, data_size;
+
+
+
+
+
+  for(;;) {
+
+
+    while(audio_pkt_size > 0) {
+
+
+      data_size = buf_size;
+
+
+      len1 = avcodec_decode_audio2(aCodecCtx, (int16_t *)audio_buf, &data_size, 
+
+
+				  audio_pkt_data, audio_pkt_size);
+
+
+      if(len1 < 0) {
+
+
+	/* if error, skip frame */
+
+
+	audio_pkt_size = 0;
+
+
+	break;
+
+
+      }
+
+
+      audio_pkt_data += len1;
+
+
+      audio_pkt_size -= len1;
+
+
+      if(data_size <= 0) {
+
+
+	/* No data yet, get more frames */
+
+
+	continue;
+
+
+      }
+
+
+      /* We have data, return it and come back for more later */
+
+
+      return data_size;
+
+
+    }
+
+
+    if(pkt.data)
+
+
+      av_free_packet(&pkt);
+
+
+
+
+
+    if(quit) {
+
+
+      return -1;
+
+
+    }
+
+
+
+
+
+    if(packet_queue_get(&audioq, &pkt, 1) < 0) {
+
+
+      return -1;
+
+
+    }
+
+
+    audio_pkt_data = pkt.data;
+
+
+    audio_pkt_size = pkt.size;
+
+
+  }
+
+
+}
+
+
+//主函数
+
+
+int main()
+
+
+{
+
+
+	AVFormatContext *pFormatCtx ;
+
+
+	AVCodecContext *pCodecCtx,*aCodecCtx ;
+
+
+	AVCodec *pCodec,*aCodec ;
+
+
+	AVStream *st;
+
+
+	AVFrame *pFrame ;
+
+
+	AVPacket packet ;
+
+
+	struct SwsContext *img_convert_ctx=NULL;
+
+
+	SDL_Event       event;
+
+
+	uint8_t *buffer ;
+
+
+	SDL_Rect rect ;
+
+
+	char *filename="1.asf" ;
+
+
+	int ret,i,videoStream,audioStream,numBytes,frameFinished ;
+
+
+
+
+
+	 //init sdl library with video and audio
+
+
+    	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER))
+
+
+    	{
+
+
+          fprintf(stderr, "Could not initialize SDL - %s/n", SDL_GetError());
+
+
+          return -1 ;
+
+
+    	}
+
+
+//init the format and codec library 	
+
+
+	av_register_all() ;
+
+
+
+
+
+	ret=av_open_input_file(&pFormatCtx,filename,NULL,0,NULL) ;
+
+
+	if(ret<0) 
+
+
+	{
+
+
+		printf("Error1:open input file failed!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+//retrive stream information
+
+
+	ret=av_find_stream_info(pFormatCtx) ;
+
+
+	if(ret<0) 
+
+
+	{
+
+
+		printf("Error2:find stream information failed!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+
+
+
+//dump information about file onto standard error
+
+
+	dump_format(pFormatCtx,0,filename,0) ;
+
+
+
+
+
+	videoStream=-1 ;
+
+
+	audioStream=-1 ;
+
+
+	for(i=0; i < pFormatCtx->nb_streams; i++)
+
+
+	 {
+
+
+  		if(pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_VIDEO
+
+
+     			&&videoStream < 0) 
+
+
+		{
+
+
+    			videoStream=i;
+
+
+  		}
+
+
+  		if(pFormatCtx->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO &&
+
+
+     			audioStream < 0) 
+
+
+		{
+
+
+    			audioStream=i;
+
+
+  		}
+
+
+	}
+
+
+	
+
+
+//check whether find video stream and audio stream 
+
+
+	if(videoStream==-1)
+
+
+	{
+
+
+		printf("Error3:can't find video stream!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+	if(audioStream==-1)
+
+
+	{
+
+
+		printf("Error4:can't find audio stream!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+//get video codec context	
+
+
+	st=pFormatCtx->streams[videoStream] ;
+
+
+	pCodecCtx=st->codec;	
+
+
+//get audio codec contex
+
+
+	
+
+
+	aCodecCtx=pFormatCtx->streams[audioStream] ->codec;	
+
+
+	
+
+
+//find video codec 
+
+
+	pCodec=avcodec_find_decoder(pCodecCtx->codec_id) ;
+
+
+	if(pCodec==NULL)
+
+
+	{
+
+
+		printf("Error5:can't find video decoder!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+//open video decoder 
+
+
+	ret=avcodec_open(pCodecCtx,pCodec) ;
+
+
+	if(ret<0)
+
+
+	{
+
+
+		printf("open video decoder failed!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+
+
+
+// Allocate video frame
+
+
+  	pFrame=avcodec_alloc_frame();
+
+
+
+
+
+//init  audio codec context
+
+
+	if(init_sdl_audio(aCodecCtx)<0)
+
+
+	{
+
+
+		printf("Error6:init sdl audio failed!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+//find audio codec 	
+
+
+	aCodec=avcodec_find_decoder(aCodecCtx->codec_id) ;
+
+
+	if(aCodec==NULL)
+
+
+	{
+
+
+		printf("Error7:can't find audio decoder!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+//open audio decoder
+
+
+	ret=avcodec_open(aCodecCtx, aCodec);
+
+
+	if(ret<0)
+
+
+	{
+
+
+		printf("Error8:open audio decoder failed!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+
+
+
+ //init audio packet queue 
+
+
+  	packet_queue_init(&audioq);
+
+
+  	SDL_PauseAudio(0);
+
+
+//init overalay
+
+
+	if(init_sdl(pCodecCtx->width,pCodecCtx->height)<0)
+
+
+	{
+
+
+		printf("Error9:init sdl library failed!/n") ;
+
+
+		return -1 ;
+
+
+	}
+
+
+//不知道为什么
+
+
+	 url_set_interrupt_cb(decode_interrupt_cb);
+
+
+//decode video and audio frame
+
+
+	while(av_read_frame(pFormatCtx,&packet)>=0)
+
+
+	{
+
+
+		if(packet.stream_index==videoStream)
+
+
+		{
+
+
+//decode a frame
+
+
+			avcodec_decode_video(pCodecCtx,pFrame,&frameFinished,packet.data,packet.size) ;
+
+
+//finish or not ?
+
+
+			if(frameFinished)
+
+
+			{
+
+
+				sdl_display((AVPicture *)pFrame,bmp,pCodecCtx->pix_fmt,pCodecCtx->width,pCodecCtx->height) ;	
+
+
+			}
+
+
+		}else if(packet.stream_index==audioStream)
+
+
+		{
+
+
+			packet_queue_put(&audioq, &packet);
+
+
+
+
+
+		}else
+
+
+		{
+
+
+			av_free_packet(&packet) ;
+
+
+		}
+
+
+		SDL_PollEvent(&event);
+
+
+		switch(event.type) 
+
+
+		{
+
+
+		    case SDL_QUIT:	
+
+
+					quit = 1;
+
+
+			      		SDL_Quit();
+
+
+			      		exit(0);
+
+
+			      		break;
+
+
+		    default:
+
+
+		      		break;
+
+
+		}
+
+
+	}	
+
+
+// Free the YUV frame
+
+
+	av_free(pFrame);
+
+
+	  
+
+
+// Close the codec
+
+
+	avcodec_close(pCodecCtx);
+
+
+	  
+
+
+// Close the video file
+
+
+	av_close_input_file(pFormatCtx);
+
+
+	  
+
+
+	return 0;
+
+
+
+
+
+}
+
+
+
+
+
+但是这个程序没有解决音视频同步等问题，视频数据显示很快！
+顶
+0
