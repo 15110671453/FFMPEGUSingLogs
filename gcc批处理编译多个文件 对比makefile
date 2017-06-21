@@ -1,0 +1,33 @@
+gcc批处理编译多个文件 对比makefile
+CC= gcc
+CFLAGS= -O2 -g -Wall 
+LIBS= -lsqlite3 
+LIB_DIR= -L../sqlite3/lib/
+INCLUD_DIR= -I../sqlite3/include
+test:test.c
+    $(CC) $^ $(CFLAGS) -o $@ \
+        $(LIBS) $(INCLUD_DIR) $(LIB_DIR)
+.PHONY:clean
+clean:
+    -rm test 
+1.解释：编译器是gcc（可选）
+2.CFLAGS= -O2 -g -Wall  是gcc的参数 -O2优化，-g 加调试信息， -Wall（警告）---CFLAGS项可选
+3.LIBS= -lsqlite3（库名）有就写没有就不要写，一般的库编译器自己去系统找，特殊的库要自己加。如：pthread线程库。
+4.LIB_DIR= -L../sqlite3/lib/，指定库的路径
+5.INCLUD_DIR= -I../sqlite3/include,指定头文件的路径.(I是大写的i)
+6.
+test:test.c
+    $(CC) $^ $(CFLAGS) -o $@ \
+        $(LIBS) $(INCLUD_DIR) $(LIB_DIR)
+展开就是：gcc -O2 -g -Wall -o test  -L../sqlite3/lib/  -I../sqlite3/include
+针对你的问题：
+先进你的A文件夹
+all:test.o
+    cc *.o  -I../B/include/（写绝对路径)
+%*.o:%*.c
+
+
+
+
+这里看makefile
+make是一个命令工具，它解释Makefile 中的指令（应该说是规则）。在Makefile文件中描述了整个工程所有文件的编译顺序、编译规则。Makefile 有自己的书写格式、关键字、函数。像C 语言有自己的格式、关键字和函数一样。而且在Makefile 中可以使用系统shell所提供的任何命令来完成想要的工作。Makefile（在其它的系统上可能是另外的文件名）在绝大多数的IDE 开发环境中都在使用，已经成为一种工程的编译方法。
