@@ -1,0 +1,30 @@
+再次编译安装ffmpeg就为了在xcode下集成开发
+
+  macserver1:ffmpeg-3.3.1 2 admindyn$ ./configure  --prefix=/Users/admindyn/Desktop/工作/集分宝项目工作目录/SDLFFMPEGMAC1/SDLFFMPEGMAC1/x86_64 --enable-shared --arch=x86_64
+install prefix            /Users/admindyn/Desktop/工作/集分宝项目工作目录/SDLFFMPEGMAC1/SDLFFMPEGMAC1/x86_64
+source path               .
+C compiler                gcc
+C library                 
+ARCH                      x86 (generic)
+big-endian                no
+runtime cpu detection     yes
+yasm                      yes
+MMX enabled               yes
+MMXEXT enabled            yes
+
+
+  --bindir=DIR             install binaries in DIR [PREFIX/bin]
+  --datadir=DIR            install data files in DIR [PREFIX/share/ffmpeg]
+  --docdir=DIR             install documentation in DIR [PREFIX/share/doc/ffmpeg]
+  --libdir=DIR             install libs in DIR [PREFIX/lib]
+  --shlibdir=DIR           install shared libs in DIR [LIBDIR]
+  --incdir=DIR             install includes in DIR [PREFIX/include]
+
+
+第二次 指明 编译器 clang
+
+macserver1:ffmpeg-3.3.1 2 admindyn$ CC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+macserver1:ffmpeg-3.3.1 2 admindyn$ ./configure  --prefix=/Users/admindyn/Desktop/工作/集分宝项目工作目录/SDLFFMPEGMAC1/SDLFFMPEGMAC1/x86_64 --enable-shared --arch=x86_64 CC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang
+Unknown option "CC=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang".
+See ./configure --help for available options.
+macserver1:ffmpeg-3.3.1 2 admindyn$ ./configure  --prefix=/Users/admindyn/Desktop/工作/集分宝项目工作目录/SDLFFMPEGMAC1/SDLFFMPEGMAC1/x86_64 --enable-shared --arch=x86_64
