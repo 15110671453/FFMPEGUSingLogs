@@ -1,0 +1,5 @@
+自己电脑修改xcode路径 安装多版本xcode记录
+thief-MBP:Applications thief$ sudo xcode-select --switch /Applications/xcodes/Xcode.app 
+Password:
+thief-MBP:Applications thief$ cd /Users/thief/Desktop/工作目录/IOSFFMPEG1/ffmpeglibrary 
+thief-MBP:ffmpeglibrary thief$ ./configure --enable-cross-compile --arch=arm --target-os=darwin --cc='clang -arch armv7' --sysroot=$(xcrun --sdk iphoneos --show-sdk-path) --cpu=cortex-a8 --enable-pic --prefix=/Users/thief/Desktop/工作目录/IOSFFMPEG1/ffmpeglibrary 
