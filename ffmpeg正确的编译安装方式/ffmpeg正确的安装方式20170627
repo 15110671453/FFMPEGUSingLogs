@@ -1,0 +1,116 @@
+ffmpeg正确的安装方式1
+
+这个命令 可以获取 iphonesdk 路径
+macserver1:FFmpeg-master admindyn$ xcrun --sdk iphoneos --show-sdk-path
+/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.3.sdk
+
+学习 查看macosx sdk的路径 
+
+macserver1:FFmpeg-master admindyn$ xcrun --sdk macosx --show-sdk-path
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk
+macserver1:FFmpeg-master admindyn$ 
+
+需要确定安装了gas-preprocessor.pl
+macserver1:FFmpeg-master admindyn$ /usr/local/bin/gas-preprocessor.pl 
+Unrecognized input filetype at /usr/local/bin/gas-preprocessor.pl line 96.
+
+git下载源码 然后configure make make install
+macserver1:FFmpeg-master admindyn$ ./configure --enable-cross-compile --arch=arm --target-os=darwin --cc='clang -arch armv7' --sysroot=$(xcrun --sdk iphoneos --show-sdk-path) --cpu=cortex-a8 --enable-pic --prefix=/Users/admindyn/Desktop/工作/集分宝项目工作目录/SDLFFMPEGMAC1/SDLFFMPEGMAC1/ffmpeglibrary 
+
+
+上面是ios的configure 现在是mac的configure
+
+./configure --enable-cross-compile  --target-os=darwin --arch=x86_64  --cc='clang -arch x86_64' --sysroot=$(xcrun --sdk macosx --show-sdk-path)  --enable-pic --prefix=/Users/admindyn/Desktop/工作/集分宝项目工作目录/SDLFFMPEGMAC1/SDLFFMPEGMAC1/ffmpeglibrary 
+
+
+首先要了解两个工具：xcodebuild 、xcrun。，你也可以使用 -help 帮助或者man 命令来查看使用手册。！
+
+macserver1:FFmpeg-master admindyn$ which xcodebuild
+/usr/bin/xcodebuild
+macserver1:FFmpeg-master admindyn$ which xcrun
+/usr/bin/xcrun
+macserver1:FFmpeg-master admindyn$ 
+
+
+用xcodebuild 生成 app
+
+xcodebuild -sdk  iphoneos8.1   -target test  -configuration Release  -arch arm64  -arch armv7  CODE_SIGN_IDENTITY="iPhone Distribution: xxxxxxx" clean build  
+
+-sdk ：可以使用如下命令查看所支持的SDK
+xcodebuild -showsdks
+
+-target:可以使用如下命令查看所支持的target
+
+xcodebuild -list  
+
+-configureation 默认是Release的。
+-arch :是指定要生成的指令集
+
+
+xcodebuild 执行成功之后，会在工程的根目录下产生一个build文件夹，在build/Release-iphoneos目录下就能找到生成的app文件
+
+通过app文件生成ipa文件
+
+sudo xcrun -sdk iphoneos PackageApplication    -v build/Release-iphoneos/test.app  -o `pwd`/build/Release-iphoneos/test2.ipa --sign "iPhone Distribution: xxxxxxxxxx"  
+
+macserver1:FFmpeg-master admindyn$ xcrun --find gcc
+/Applications/Xcode.app/Contents/Developer/usr/bin/gcc
+macserver1:FFmpeg-master admindyn$ 
+
+
+一、概要
+平时项目开发中，可能使用第三方提供的静态库.a，如果.a提供方技术不成熟，使用的时候就会出现问题，例如：
+在真机上编译报错：No architectures to compile for (ONLY_ACTIVE_ARCH=YES, active arch=x86_64, VALID_ARCHS=i386).
+在模拟器上编译报错：No architectures to compile for (ONLY_ACTIVE_ARCH=YES, active arch=armv7s, VALID_ARCHS=armv7 armv6).
+要解决以上问题，就要了解一下Apple移动设备处理器指令集相关的一些细节知识。
+
+二、几个重要概念
+1、ARM
+ARM处理器，特点是体积小、低功耗、低成本、高性能，所以几乎所有手机处理器都基于ARM，在嵌入式系统中应用广泛。
+
+2、ARM处理器指令集
+armv6｜armv7｜armv7s｜arm64都是ARM处理器的指令集，这些指令集都是向下兼容的，例如armv7指令集兼容armv6，只是使用armv6的时候无法发挥出其性能，无法使用armv7的新特性，从而会导致程序执行效率没那么高。
+还有两个我们也很熟悉的指令集：i386｜x86_64 是Mac处理器的指令集，i386是针对intel通用微处理器32架构的。x86_64是针对x86架构的64位处理器。所以当使用iOS模拟器的时候会遇到i386｜x86_64，ios模拟器没有arm指令集。
+
+3、目前iOS移动设备指令集
+arm64：iPhone5S｜ iPad Air｜ iPad mini2(iPad mini with Retina Display)
+armv7s：iPhone5｜iPhone5C｜iPad4(iPad with Retina Display)
+armv7：iPhone3GS｜iPhone4｜iPhone4S｜iPad｜iPad2｜iPad3(The New iPad)｜iPad mini｜iPod Touch 3G｜iPod Touch4
+armv6 设备： iPhone, iPhone2, iPhone3G, 第一代、第二代 iPod Touch（一般不需要去支持）
+
+
+ffmpeg正确的编译 方式
+
+　　2、指定编译环境
+
+　　FFMpeg作为一个跨平台的库，不同的平台，不同的人的计算机上编译器的路径都可能不尽相同，所以我们需要为编译脚本指定编译器的路径。同事我们还可以指定其他编译选项，如是否交叉编译，目标平台系统，CPU架构，需要依赖的其他库的路径已经指定是否禁用汇编优化等。
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+--enable-cross-compile   assume a cross-compiler is used
+--sysroot=PATH           root of cross-build tree
+--sysinclude=PATH        location of cross-build system headers
+--target-os=OS           compiler targets OS []
+--cc=CC                  use C compiler CC [gcc]
+--extra-cflags=ECFLAGS   add ECFLAGS to CFLAGS []
+--extra-ldflags=ELDFLAGS add ELDFLAGS to LDFLAGS []
+--arch=ARCH              select architecture []
+--cpu=CPU                select the minimum required CPU (affects
+                         instruction selection, may crash on older CPUs)
+--disable-asm            disable all assembler optimizations
+　　sysroot即iOS SDK的路径，注意编译真机版本的库时需要使用iPhoneOS.platform中SDK的路径，编译模拟器版本的库使用iPhoneSimulator.platform中SDK的路径。target-os填写darwin(苹果系统的内核)，arch可以根据具体的情况添加i386(模拟器)，armv6，armv7等。cpu根据具体类型可填写cortex-a8，cortox-a9，i386等。　　　
+
+ 
+
+　　3、指定静态库的安装路径
+
+　　指定执行make install命令时编译好的静态库和相关头文件拷贝到的位置，即FFmpeg库编译后输出的路径。通常我们只需要设置“--prefix=PREFIX”选项即可。例如我们需要将最后生成静态库的路径指向“build/armv7”下，则设置--prefix="build/armv7";
