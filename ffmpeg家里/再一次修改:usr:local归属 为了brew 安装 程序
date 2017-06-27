@@ -1,0 +1,83 @@
+家里再一次修改归属 为了brew 安装 程序
+thief-MBP:FFmpeg-master thief$ brew install pkg-config
+Error: /usr/local is not writable. You should change the
+ownership and permissions of /usr/local back to your
+user account:
+  sudo chown -R $(whoami) /usr/local
+Warning: You are using a pre-release version of Xcode.
+You may encounter build failures or other breakages.
+Please create pull-requests instead of filing issues.
+
+thief-MBP:FFmpeg-master thief$ sudo chown -R $(whoami) /usr/local
+thief-MBP:FFmpeg-master thief$ brew install pkg-config
+
+学习到脚本语法 脚本中使用 终端命令的 例子
+
+thief-MBP:~ thief$ $(git --version)
+git version 2.1.1
+thief-MBP:~ thief$ TEST=123
+thief-MBP:~ thief$ echo $TEST
+123
+thief-MBP:~ thief$ echo $(TEST)
+
+thief-MBP:~ thief$ 
+
+安装ffmpeg 需要pkg-config
+下载pkg-config源码
+cd /Users/thief/Downloads/pkg-config-0.29.2
+./configure --with-internal-glib
+
+
+thief-MBP:FFmpeg-master thief$ brew install pkg-config
+Checking out v1.2.3 in /usr/local...
+To checkout master in /usr/local run:
+  'cd /usr/local && git checkout master
+To restore the stashed changes to /usr/local run:
+  'cd /usr/local && git stash pop'
+Checking out v1.2.3 in /usr/local/Library/Taps/homebrew/homebrew-core...
+To checkout master in /usr/local/Library/Taps/homebrew/homebrew-core run:
+  'cd /usr/local/Library/Taps/homebrew/homebrew-core && git checkout master
+fatal: Cannot update paths and switch to branch 'v1.2.3' at the same time.
+Did you intend to checkout 'refs/tags/1.2.3' which can not be resolved as commit?
+fatal: Needed a single revision
+invalid upstream refs/tags/1.2.3
+Checking out v1.2.3 in /usr/local/Library/Taps/homebrew/homebrew-dupes...
+To checkout master in /usr/local/Library/Taps/homebrew/homebrew-dupes run:
+  'cd /usr/local/Library/Taps/homebrew/homebrew-dupes && git checkout master
+fatal: Cannot update paths and switch to branch 'v1.2.3' at the same time.
+Did you intend to checkout 'refs/tags/1.2.3' which can not be resolved as commit?
+fatal: Needed a single revision
+invalid upstream refs/tags/1.2.3
+Checking out v1.2.3 in /usr/local/Library/Taps/homebrew/homebrew-php...
+To checkout master in /usr/local/Library/Taps/homebrew/homebrew-php run:
+  'cd /usr/local/Library/Taps/homebrew/homebrew-php && git checkout master
+fatal: Cannot update paths and switch to branch 'v1.2.3' at the same time.
+Did you intend to checkout 'refs/tags/1.2.3' which can not be resolved as commit?
+fatal: Needed a single revision
+invalid upstream refs/tags/1.2.3
+Checking out v1.2.3 in /usr/local/Library/Taps/homebrew/homebrew-versions...
+To checkout master in /usr/local/Library/Taps/homebrew/homebrew-versions run:
+  'cd /usr/local/Library/Taps/homebrew/homebrew-versions && git checkout master
+fatal: Cannot update paths and switch to branch 'v1.2.3' at the same time.
+Did you intend to checkout 'refs/tags/1.2.3' which can not be resolved as commit?
+fatal: Needed a single revision
+invalid upstream refs/tags/1.2.3
+==> Using the sandbox
+==> Downloading https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar
+######################################################################## 100.0%
+==> ./configure --prefix=/usr/local/Cellar/pkg-config/0.29.1 --disable-host-tool
+==> make
+==> make check
+==> make install
+🍺  /usr/local/Cellar/pkg-config/0.29.1: 11 files, 624.9KB, built in 1 minute 43 seconds
+
+ffmpeg编译安装
+thief-MBP:FFmpeg-master thief$ 
+
+ ./configure --enable-cross-compile --arch=arm --target-os=darwin --cc='clang -arch armv7' --sysroot=$(xcrun --sdk iphoneos --show-sdk-path) --cpu=cortex-a8 --enable-pic --prefix=/Users/thief/Desktop/工作目录/IOSFFMPEG1/ffmpeglibrary --enable-shared --disable-static
+
+家里再一次修改归属 为了brew 安装 程序
+
+Homebrew no longer needs to have ownership of /usr/local. If you wish you can
+return /usr/local to its default ownership with:
+  sudo chown root:wheel /usr/local
