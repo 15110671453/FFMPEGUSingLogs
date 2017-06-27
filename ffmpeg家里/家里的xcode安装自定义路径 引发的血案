@@ -1,0 +1,24 @@
+家里的xcode安装自定义路径 引发的血案 学习到脚本语法 脚本中使用 终端命令的 例子
+thief-MBP:FFmpeg-master thief$ brew install pkg-config
+Error: /usr/local is not writable. You should change the
+ownership and permissions of /usr/local back to your
+user account:
+  sudo chown -R $(whoami) /usr/local
+Warning: You are using a pre-release version of Xcode.
+You may encounter build failures or other breakages.
+Please create pull-requests instead of filing issues.
+
+thief-MBP:FFmpeg-master thief$ sudo chown -R $(whoami) /usr/local
+thief-MBP:FFmpeg-master thief$ brew install pkg-config
+
+学习到脚本语法 脚本中使用 终端命令的 例子
+
+thief-MBP:~ thief$ $(git --version)
+git version 2.1.1
+thief-MBP:~ thief$ TEST=123
+thief-MBP:~ thief$ echo $TEST
+123
+thief-MBP:~ thief$ echo $(TEST)
+
+thief-MBP:~ thief$ 
+
