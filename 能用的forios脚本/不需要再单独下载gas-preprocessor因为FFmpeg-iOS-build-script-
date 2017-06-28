@@ -1,0 +1,3 @@
+不需要再单独下载gas-preprocessor因为FFmpeg-iOS-build-script-master中的build-ffmpeg.sh脚本会检查有无并为我们下载
+
+我们把这份文件copy过来 用来参考学习
