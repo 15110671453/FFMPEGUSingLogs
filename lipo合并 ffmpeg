@@ -1,0 +1,9 @@
+lipo合并 ffmpeg
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libavcodec.a -arch armv7 ./armv7/lib/libavcodec.a -output universal/libavcodec.a
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libavdevice.a -arch armv7 ./armv7/lib/libavdevice.a -output universal/libavdevice.a
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libavfilter.a -arch armv7 ./armv7/lib/libavfilter.a -output universal/libavfilter.a
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libavformat.a -arch armv7 ./armv7/lib/libavformat.a -output universal/libavformat.a
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libavutil.a -arch armv7 ./armv7/lib/libavutil.a -output universal/libavutil.a
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libswresample.a -arch armv7 ./armv7/lib/libswresample.a -output universal/libswresample.a
+macserver1:ffmpeglibrary admindyn$ lipo -create -arch arm64 ./arm64/lib/libswscale.a -arch armv7 ./armv7/lib/libswscale.a -output universal/libswscale.a
+macserver1:ffmpeglibrary admindyn$ 
